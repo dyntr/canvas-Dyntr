@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Klasická Dyntrovina</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 20px;
+        }
+        #drawingCanvas {
+            border: 2px solid #666;
+            margin-top: 10px;
+        }
+        .tool-button {
+            background-color: rgb(152, 152, 152);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .tool-button:hover {
+            background-color: #45a049;
+        }
+        .control-panel {
+            margin-bottom: 10px;
+        }
+        .control-panel input[type="text"] {
+            padding: 10px;
+            margin: 4px 2px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h2>Klasická Dyntrovina</h2>
+    <div class="control-panel">
+        <button class="tool-button" onclick="setTool('select')">Select</button>
+        <button class="tool-button" onclick="setTool('brush')">Brush</button>
+        <button class="tool-button" onclick="setTool('airbrush')">Airbrush</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="range" id="brushSize" min="1" max="50" value="5">
+        <button class="tool-button" onclick="addRect()">Add Rectangle</button>
+        <button class="tool-button" onclick="addCircle()">Add Circle</button>
+        <button class="tool-button" onclick="deleteSelected()">Delete Selected</button>
+        <button class="tool-button" onclick="clearCanvas()">Clear Canvas</button>
+        <button class="tool-button" onclick="saveCanvas()">Save Image</button>
+        <input type="text" id="fileName" placeholder="Enter file name">
+    </div>
+    <canvas id="drawingCanvas" width="600" height="400"></canvas>
+    <script>
+        var canvas = new fabric.Canvas('drawingCanvas');
+        canvas.isDrawingMode = false;
+        canvas.freeDrawingBrush.width = parseInt(document.getElementById('brushSize').value, 10) || 1;
+        canvas.freeDrawingBrush.color = document.getElementById('colorPicker').value;
+
+        document.getElementById('brushSize').onchange = function() {
+            canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
+        };
+        document.getElementById('colorPicker').onchange = function() {
+            canvas.freeDrawingBrush.color = this.value;
+        };
+
+        function setTool(tool) {
+            if (tool === 'select') {
+                canvas.isDrawingMode = false;
+            } else {
+                canvas.isDrawingMode = true;
+                if (tool === 'brush') {
+                    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                } else if (tool === 'airbrush') {
+                    canvas.freeDrawingBrush = new fabric.SprayBrush(canvas);
+                    canvas.freeDrawingBrush.density = 20;
+                }
+            }
+        }
+
+        function addRect() {
+            var rect = new fabric.Rect({
+                left: 100,
+                top: 100,
+                fill: document.getElementById('colorPicker').value,
+                width: 60,
+                height: 70,
+                hasControls: true,
+                hasBorders: true
+            });
+            canvas.add(rect);
+        }
+
+        function addCircle() {
+            var circle = new fabric.Circle({
+                radius: 30, 
+                fill: document.getElementById('colorPicker').value,
+                left: 100, 
+                top: 100,
+                hasControls: true,
+                hasBorders: true
+            });
+            canvas.add(circle);
+        }
+
+        function deleteSelected() {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.remove(activeObject);
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Delete') {
+                deleteSelected();
+            }
+        });
+
+        function clearCanvas() {
+            canvas.clear();
+        }
+
+        function saveCanvas() {
+            var fileName = document.getElementById('fileName').value || 'canvas_image';
+            fileName += '.png';
+            var link = document.createElement('a');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
